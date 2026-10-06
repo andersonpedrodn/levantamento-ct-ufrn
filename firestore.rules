@@ -1,0 +1,23 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function emailPermitido() {
+      return request.auth != null &&
+        request.auth.token.email_verified == true &&
+        (
+          request.auth.token.email.matches('.*@ufrn[.]edu[.]br$') ||
+          request.auth.token.email in [
+            'suporte.setor4@ct.ufrn.br',
+            'anderson.nascimento.017@ufrn.edu.br'
+          ]
+        );
+    }
+
+    match /levantamento-setor4/{salaId} {
+      allow read, write: if emailPermitido();
+    }
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
